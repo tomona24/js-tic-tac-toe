@@ -9,7 +9,6 @@ let progDraw = document.getElementById("progress-draw");
 let resetButton = document.getElementById("reset-button");
 let cells = document.getElementsByClassName("cell");
 const cellsArray = [].slice.call(cells);
-let result = false;
 
 let ids = [
   "cell1",
@@ -35,32 +34,12 @@ let win8 = { cell3: null, cell5: null, cell7: null };
 let conditionWin = [win1, win2, win3, win4, win5, win6, win7, win8];
 
 //fill the conditionWin
-let checkTheState = function(cellId) {
+let changeTheState = function(cellId) {
   conditionWin.map(item => {
     if (cellId in item) {
       item[cellId] = isCircle;
     }
   });
-};
-
-// fill the cell by O or X
-let clickToFill = function(cellId) {
-  let target = document.getElementById(cellId);
-  let addLetter = function() {
-    if (isCircle == true) {
-      target.textContent = "◯";
-    } else {
-      target.textContent = "×";
-    }
-    counter++;
-    if (counter < 9) {
-    changeTurn();
-    }
-    target.classList.add("cell-filled");
-    checkTheState(cellId);
-    showResult(checkResult());
-  };
-  target.addEventListener("click", addLetter, false);
 };
 
 // change the turn
@@ -98,12 +77,18 @@ let showResult = function(result) {
 let checkBingo = function(item, which) {
   return Object.values(item).every(cell => cell == which);
 };
+
+let checkDraw = function(item) {
+  return Object.values(item).every(cell => cell != null);
+}
+
 let checkResult = function() {
+  let result = false;
   if (conditionWin.some(item => checkBingo(item, true))) {
-    result = "crossWin";
-  } else if (conditionWin.some(item => checkBingo(item, false))) {
     result = "circleWin";
-  } else if (counter == 9) {
+  } else if (conditionWin.some(item => checkBingo(item, false))) {
+    result = "crossWin";
+  } else if (conditionWin.every(item => checkDraw(item))) {
     result = "draw";
   }
   return result;
@@ -111,7 +96,6 @@ let checkResult = function() {
 
 // for remove
 let remove = function(result) {
-  if (result != false) {
     progStarting.classList.remove("hidden");
     if (result == "draw") {
       progDraw.classList.add("hidden");
@@ -120,15 +104,14 @@ let remove = function(result) {
     } else if (result == "crossWin") {
       progWinCross.classList.add("hidden");
     }
-  }
 };
+
 // reset
 let reset = function() {
   counter = 0;
   isCircle = true;
-  remove(result);
-  result = false;
-  conditionWin.forEach(item => {
+  remove(checkResult());
+  conditionWin.map(item => {
     ids.forEach(id => {
       if (item[id] != null) {
         item[id] = null;
@@ -143,16 +126,30 @@ let reset = function() {
   });
 };
 
-clickToFill("cell1");
-clickToFill("cell2");
-clickToFill("cell3");
-
-clickToFill("cell4");
-clickToFill("cell5");
-clickToFill("cell6");
-
-clickToFill("cell7");
-clickToFill("cell8");
-clickToFill("cell9");
-
 resetButton.addEventListener("click", reset, false);
+
+
+// fill the cell by O or X
+let clickToFill = function(cellId) {
+  let target = document.getElementById(cellId);
+  let addLetter = function() {
+    if (isCircle == true) {
+      target.textContent = "◯";
+    } else {
+      target.textContent = "×";
+    }
+    target.classList.add("cell-filled");
+    changeTheState(cellId);
+    counter++;
+    showResult(checkResult());
+    if (counter < 9) {
+    changeTurn();
+    }
+  };
+  target.addEventListener("click", addLetter, false);
+};
+
+
+// setup
+ids.forEach(cellId => clickToFill(cellId));
+
