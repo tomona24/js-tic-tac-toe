@@ -1,5 +1,4 @@
 let isCircle = true;
-let counter = 0;
 let circleObj = document.getElementById("circle");
 let crossObj = document.getElementById("cross");
 let progStarting = document.getElementById("progress-starting");
@@ -10,7 +9,20 @@ let resetButton = document.getElementById("reset-button");
 let cells = document.getElementsByClassName("cell");
 const cellsArray = [].slice.call(cells);
 
-let ids = [
+const CLASSES = {
+  choiceActive: "choice-active",
+  hidden: "hidden",
+  cellFilled: "cell-filled"
+}
+
+const RESULT = {
+  draw: "draw",
+  circleWin: "circleWin",
+  crossWin: "crossWin"
+}
+
+
+const IDS = [
   "cell1",
   "cell2",
   "cell3",
@@ -45,30 +57,31 @@ let changeTheState = function(cellId) {
 // change the turn
 let changeTurn = function() {
     if (isCircle) {
-      circleObj.classList.remove("choice-active");
-      crossObj.classList.add("choice-active");
+      circleObj.classList.remove(CLASSES.choiceActive);
+      crossObj.classList.add(CLASSES.choiceActive);
     } else {
-      crossObj.classList.remove("choice-active");
-      circleObj.classList.add("choice-active");
+      crossObj.classList.remove(CLASSES.choiceActive);
+      circleObj.classList.add(CLASSES.choiceActive);
     }
     isCircle = !isCircle;
+    console.log(isCircle)
 };
 
 // show the progress or result
 let showResult = function(result) {
   if (result != false) {
     cellsArray.forEach(cell => {
-      if (!cell.classList.contains("cell-filled")) {
-        cell.classList.add("cell-filled");
+      if (!cell.classList.contains(CLASSES.cellFilled)) {
+        cell.classList.add(CLASSES.cellFilled);
       }
     });
-    progStarting.classList.add("hidden");
-    if (result == "draw") {
-      progDraw.classList.remove("hidden");
-    } else if (result == "circleWin") {
-      progWinCircle.classList.remove("hidden");
-    } else if (result == "crossWin") {
-      progWinCross.classList.remove("hidden");
+    progStarting.classList.add(CLASSES.hidden);
+    if (result == RESULT.draw) {
+      progDraw.classList.remove(CLASSES.hidden);
+    } else if (result == RESULT.circleWin) {
+      progWinCircle.classList.remove(CLASSES.hidden);
+    } else if (result == RESULT.crossWin) {
+      progWinCross.classList.remove(CLASSES.hidden);
     }
   }
 };
@@ -85,24 +98,24 @@ let checkDraw = function(item) {
 let checkResult = function() {
   let result = false;
   if (conditionWin.some(item => checkBingo(item, true))) {
-    result = "circleWin";
+    result = RESULT.circleWin;
   } else if (conditionWin.some(item => checkBingo(item, false))) {
-    result = "crossWin";
+    result = RESULT.crossWin;
   } else if (conditionWin.every(item => checkDraw(item))) {
-    result = "draw";
+    result = RESULT.draw;
   }
   return result;
 };
 
 // for remove
 let remove = function(result) {
-    progStarting.classList.remove("hidden");
-    if (result == "draw") {
-      progDraw.classList.add("hidden");
-    } else if (result == "circleWin") {
-      progWinCircle.classList.add("hidden");
-    } else if (result == "crossWin") {
-      progWinCross.classList.add("hidden");
+    progStarting.classList.remove(CLASSES.hidden);
+    if (result == RESULT.draw) {
+      progDraw.classList.add(CLASSES.hidden);
+    } else if (result == RESULT.circleWin) {
+      progWinCircle.classList.add(CLASSES.hidden);
+    } else if (result == RESULT.crossWin) {
+      progWinCross.classList.add(CLASSES.hidden);
     }
 };
 
@@ -112,17 +125,17 @@ let reset = function() {
   isCircle = true;
   remove(checkResult());
   conditionWin.map(item => {
-    ids.forEach(id => {
+    IDS.forEach(id => {
       if (item[id] != null) {
         item[id] = null;
       }
     })
   });
-  crossObj.classList.remove("choice-active");
-  circleObj.classList.add("choice-active");
+  crossObj.classList.remove(CLASSES.choiceActive);
+  circleObj.classList.add(CLASSES.choiceActive);
   cellsArray.forEach(cell => {
     cell.textContent = "";
-    cell.classList.remove("cell-filled");
+    cell.classList.remove(CLASSES.cellFilled);
   });
 };
 
@@ -138,12 +151,11 @@ let clickToFill = function(cellId) {
     } else {
       target.textContent = "×";
     }
-    target.classList.add("cell-filled");
+    target.classList.add(CLASSES.cellFilled);
     changeTheState(cellId);
-    counter++;
     showResult(checkResult());
-    if (counter < 9) {
-    changeTurn();
+    if (checkResult() == false) {
+      changeTurn();
     }
   };
   target.addEventListener("click", addLetter, false);
@@ -151,5 +163,4 @@ let clickToFill = function(cellId) {
 
 
 // setup
-ids.forEach(cellId => clickToFill(cellId));
-
+IDS.forEach(cellId => clickToFill(cellId));
